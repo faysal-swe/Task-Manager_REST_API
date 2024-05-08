@@ -1,7 +1,7 @@
 # task_manager
 
-User can management their daily life task with this application.
-In this application added signup, login, logout features with rest api.
+`<br>User can management their daily life task with this application.
+`<br>In this application added signup, login, logout features with rest api.`<br>
 ![s_1](https://github.com/faysal-swe/Task-Manager_REST_API/assets/136366279/f66bf64d-c2ad-4b65-ae90-b6eca69d4a5c)
 ![s_2](https://github.com/faysal-swe/Task-Manager_REST_API/assets/136366279/74b05bfa-6a7e-4cc8-9a40-7282428f44fc)
 ![s_3](https://github.com/faysal-swe/Task-Manager_REST_API/assets/136366279/d83ac2dc-3965-420d-b06f-b4b912ce14fb)
