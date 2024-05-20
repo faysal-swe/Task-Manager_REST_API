@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/data/models/network_response.dart';
-import 'package:task_manager/data/services/network_calling.dart';
+import 'package:get/get.dart';
 import 'package:task_manager/ui/widgets/screen_background.dart';
-import '../../../data/utils/urls.dart';
+import '../../state_controller/signup_controller.dart';
 import 'login.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -25,44 +24,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool _signUpInprogress = false;
-
-  Future<void> userSignUp() async {
-    _signUpInprogress = true;
-    if(mounted){
-      setState(() {});
-    }
-    final NetworkResponse response =
-        await NetworkCalling().postRequest(Urls.registration, <String, dynamic>{
-      "email": _emailTextEditingController.text.trim(),
-      "firstName": _firstNameTextEditingController.text.trim(),
-      "lastName": _lastNameTextEditingController.text.trim(),
-      "mobile": _mobileNumberTextEditingController.text.trim(),
-      "password": _passwordTextEditingController.text,
-      "photo": ""
-    });
-    _signUpInprogress = false;
-    if(mounted){
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      _emailTextEditingController.clear();
-      _firstNameTextEditingController.clear();
-      _lastNameTextEditingController.clear();
-      _mobileNumberTextEditingController.clear();
-      _passwordTextEditingController.clear();
-      if(mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-            const SnackBar(content: Text('Registration success!')));
-      }
-    }else {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Registration field!')));
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,21 +123,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: Visibility(
-                      visible:!_signUpInprogress,
-                      replacement:const Center(child:CircularProgressIndicator()),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (!_formKey.currentState!.validate()) {
-                            return;
-                          }
-                          userSignUp();
-                        },
-                        child: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
+                    child: GetBuilder<SignupController>(
+                      builder: (signupController) {
+                        return Visibility(
+                          visible:!signupController.signupInProgress,
+                          replacement:const Center(child:CircularProgressIndicator()),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (!_formKey.currentState!.validate()) {
+                                return;
+                              }
+                              signupController.userSignUp(
+                                _emailTextEditingController.text.trim(),
+                                _firstNameTextEditingController.text.trim(),
+                                _lastNameTextEditingController.text.trim(),
+                                _mobileNumberTextEditingController.text.trim(),
+                                _passwordTextEditingController.text
+                              );
+                              _emailTextEditingController.clear();
+                              _firstNameTextEditingController.clear();
+                              _lastNameTextEditingController.clear();
+                              _mobileNumberTextEditingController.clear();
+                              _passwordTextEditingController.clear();
+                              Get.snackbar('Congratulate','Registration success!');
+                            },
+                            child: const Icon(
+                              Icons.arrow_forward_ios_outlined,
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      }
                     ),
                   ),
                   const SizedBox(height: 40),

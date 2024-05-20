@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager/ui/widgets/screen_background.dart';
 import '../../../data/models/network_response.dart';
 import '../../../data/services/network_calling.dart';
 import '../../../data/utils/urls.dart';
+import '../../state_controller/email_controller.dart';
 import 'login.dart';
 import 'otp_verification.dart';
 
@@ -17,31 +19,6 @@ class _EmailVerificationScreen extends State<EmailVerificationScreen> {
   final TextEditingController _emailTextEditingController =
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool isInProgress = false;
-
-  Future<void> emailVerification() async {
-    isInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse response = await NetworkCalling()
-        .getRequest(Urls.emailVerification(_emailTextEditingController.text));
-    isInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      if (mounted) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => OtpVerificationScreen(email:_emailTextEditingController.text)));
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email Verification failed!')));
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,21 +64,32 @@ class _EmailVerificationScreen extends State<EmailVerificationScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: Visibility(
-                      visible: !isInProgress,
-                      replacement: const Center(child:CircularProgressIndicator()),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (!_formKey.currentState!.validate()) {
-                            return;
-                          }
-                          emailVerification();
-                        },
-                        child: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          color: Colors.white,
-                        ),
-                      ),
+                    child: GetBuilder<EmailController>(
+                      builder: (emailController) {
+                        return Visibility(
+                          visible: !emailController.emailInProgress,
+                          replacement: const Center(child:CircularProgressIndicator()),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (!_formKey.currentState!.validate()) {
+                                return;
+                              }
+                              emailController.emailVerification(_emailTextEditingController.text).then((value){
+                                if(value){
+                                  Get.to(OtpVerificationScreen(email:_emailTextEditingController.text));
+                                }else{
+                                  Get.snackbar('Failed','email verification failed! try again');
+                                }
+                              });
+                              _emailTextEditingController.clear();
+                            },
+                            child: const Icon(
+                              Icons.arrow_forward_ios_outlined,
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      }
                     ),
                   ),
                   const SizedBox(height: 40),

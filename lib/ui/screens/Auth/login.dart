@@ -1,14 +1,10 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager/ui/screens/Auth/email_verification.dart';
 import 'package:task_manager/ui/screens/Auth/signup.dart';
 import 'package:task_manager/ui/widgets/screen_background.dart';
-import '../../../data/models/auth_utils.dart';
-import '../../../data/models/login_model.dart';
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_calling.dart';
-import '../../../data/utils/urls.dart';
+import '../../state_controller/login_controller.dart';
 import '../bottom_nav_bar.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,48 +15,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool loginProgress = false;
   final TextEditingController _emailTextEditingController =
       TextEditingController();
   final TextEditingController _passwordTextEditingController =
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  Future<void> userLogIn() async {
-    loginProgress = true;
-    if(mounted){
-      setState(() {});
-    }
-    final NetworkResponse response =
-        await NetworkCalling().postRequest(Urls.login, <String, dynamic>{
-      "email": _emailTextEditingController.text.trim(),
-      "password": _passwordTextEditingController.text
-    },isLogin:true);
-    loginProgress = false;
-    if(mounted){
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      _emailTextEditingController.clear();
-      _passwordTextEditingController.clear();
-      LoginModel model = LoginModel.fromJson(response.body!);
-      await AuthUtils.saveUserInfo(model);
-
-      if(mounted){
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                const BottomNavigationBarScreen()),
-                (route) => false);
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('login field!')));
-      }
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -113,23 +73,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: Visibility(
-                      visible:!loginProgress,
-                      replacement: const Center(child: CircularProgressIndicator()),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (!_formKey.currentState!.validate()) {
-                            return;
-                          }
-                          userLogIn();
-
-                        },
-                        child: const Icon(
-                          Icons.arrow_forward_ios_outlined,
-                          color: Colors.white,
+                    child:
+                        GetBuilder<LoginController>(builder: (loginController) {
+                        return Visibility(
+                        visible: !loginController.loginInProgress,
+                        replacement:
+                            const Center(child: CircularProgressIndicator()),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (!_formKey.currentState!.validate()) {
+                              return;
+                            }
+                            loginController.userLogIn(
+                                _emailTextEditingController.text,
+                                _passwordTextEditingController.text).then((value){
+                                  if(value){
+                                    Get.off(const BottomNavigationBarScreen());
+                                  }else{
+                                    Get.snackbar('Failed','Login failed try again!');
+                                  }
+                            });
+                            _emailTextEditingController.clear();
+                            _passwordTextEditingController.clear();
+                          },
+                          child: const Icon(
+                            Icons.arrow_forward_ios_outlined,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                   const SizedBox(height: 40),
                   Center(

@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager/ui/screens/splash_screen.dart';
+import 'ui/state_controller/email_controller.dart';
+import 'ui/state_controller/login_controller.dart';
+import 'ui/state_controller/signup_controller.dart';
+import 'ui/state_controller/summarycount_controller.dart';
+import 'ui/state_controller/taskList_controller.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -12,9 +18,10 @@ class TaskManagerApp extends StatefulWidget {
 class _TaskManagerAppState extends State<TaskManagerApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
         navigatorKey:navigatorKey,
         title: 'Task Manager',
+        initialBinding: ControllerBinding(),
         theme: ThemeData(
             brightness: Brightness.light,
             colorSchemeSeed: Colors.green,
@@ -38,4 +45,16 @@ class _TaskManagerAppState extends State<TaskManagerApp> {
         debugShowCheckedModeBanner: false,
         home: const SplashScreen());
   }
+}
+class ControllerBinding extends Bindings{
+  @override
+  void dependencies() {
+    // TODO: implement dependencies
+    Get.put(LoginController());
+    Get.put(EmailController());
+    Get.put(SignupController());
+    Get.put(SummeryCountController());
+    Get.put(TaskListController());
+  }
+
 }
